@@ -13,16 +13,17 @@ how the stack fits together is in [`docs/LEARNING.md`](docs/LEARNING.md).
 
 ## The request's path
 
-<img src="docs/request-path-map.svg" alt="Diagram: a client sends a request to a web server (Nginx), which either serves a static file directly or forwards to an application server (Spring Boot), which queries a database (Postgres) and returns the response back through the same path" width="100%">
+<img src="docs/request-path-map.svg" alt="Diagram: browser request through Nginx's two routes, into Spring Boot's embedded Tomcat, through DispatcherServlet to a controller, then a repository into Postgres" width="100%">
 
-Four roles, same shape you'd find in most web architectures:
+Two independent routes live inside one Nginx server block:
 
-- **Client** (browser) sends the request.
-- **Web server** (Nginx) decides, by path, whether to answer immediately from disk or hand the request off — `/` serves static files directly, `/api/` forwards to the app.
-- **Application server** (Spring Boot, on an embedded Tomcat) runs the actual business logic — figures out what data is needed and turns database rows into JSON.
-- **Database** (Postgres) stores the data and returns the rows the app asked for.
+- **`location /`** — resolves straight to a file on disk (`server/index.html`, `style.css`, `script.js`). No application code runs.
+- **`location /api/`** — strips its own prefix and reverse-proxies the rest of the path to Spring Boot's embedded Tomcat on port 8080, which routes the request through `DispatcherServlet` to a `@RestController` method by its `@GetMapping` path.
 
-The response retraces the same path back out — Postgres → app server → web server → client — arriving as JSON.
+`/api/products` continues past the controller into a `JpaRepository` — an
+interface with no method bodies, whose real implementation Spring generates
+at runtime — which Hibernate translates into SQL against Postgres, and back
+into JSON on the way out.
 
 ## Tech stack
 

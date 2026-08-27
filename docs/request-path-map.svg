@@ -1,82 +1,152 @@
-<svg viewBox="0 0 1180 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: a client sends a request to a web server (Nginx), which either serves a static file directly or forwards the request to an application server (Spring Boot, using an embedded Tomcat and Hibernate/JPA). The application server queries a database (Postgres) and returns rows. The response traverses back through the application server and web server to the client as JSON.">
+<svg viewBox="0 0 1280 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: a browser sends GET /api/products to Nginx on port 80. Nginx's location slash serves static files directly from disk with no application code involved. Nginx's location /api/ strips that prefix and proxies the remainder to Spring Boot's embedded Tomcat on port 8080. Tomcat hands the request to DispatcherServlet, which routes it by @GetMapping to a RestController. The controller calls a JpaRepository, whose real implementation Spring generates at runtime, which Hibernate translates into SQL sent over JDBC to Postgres on port 5432. The response — JSON rows — flows back out the same path. TablePlus connects to Postgres separately, only for manual inspection.">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#B45A1F"></path>
+      <path d="M0,0 L10,5 L0,10 z" fill="#4A5B6E"></path>
     </marker>
-    <marker id="arrow-return" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#8FA0AF"></path>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#B45A1F"></path>
     </marker>
     <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0F1720" flood-opacity="0.10"></feDropShadow>
     </filter>
   </defs>
 
-  <rect x="0" y="0" width="1180" height="480" fill="#FBFAF8"></rect>
+  <rect x="0" y="0" width="1280" height="760" fill="#FBFAF8"></rect>
 
-  <text x="40" y="44" font-family="'IBM Plex Sans','Segoe UI',sans-serif" font-size="20" font-weight="700" fill="#16212C">One request, four roles</text>
-  <text x="40" y="65" font-family="'IBM Plex Sans','Segoe UI',sans-serif" font-size="12.5" fill="#6B7A87">GET /api/products — the generic shape, with the actual tech in brackets</text>
+  <!-- Title -->
+  <text x="40" y="46" font-family="'IBM Plex Sans','Segoe UI',sans-serif" font-size="21" font-weight="700" fill="#16212C">One request, traced hop by hop</text>
+  <text x="40" y="68" font-family="'IBM Plex Sans','Segoe UI',sans-serif" font-size="13" fill="#6B7A87">GET /api/products — from browser to Postgres and back</text>
 
-  <!-- role row y=140..280, four equal columns -->
-  <!-- 1. Client -->
+  <!-- Step badge helper positions -->
+  <!-- 1. Browser -->
   <g filter="url(#card-shadow)">
-    <rect x="40" y="150" width="230" height="150" rx="10" fill="#FFFFFF" stroke="#D8DEE3" stroke-width="1.2"></rect>
+    <rect x="40" y="330" width="140" height="86" rx="8" fill="#FFFFFF" stroke="#D8DEE3" stroke-width="1.2"></rect>
   </g>
-  <text x="155" y="185" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="15" font-weight="700" fill="#16212C">Client</text>
-  <text x="155" y="204" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#8A97A2">(Browser)</text>
-  <line x1="60" y1="216" x2="250" y2="216" stroke="#E4E9ED" stroke-width="1"></line>
-  <text x="155" y="240" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#6B7A87">GET /api/products</text>
-  <text x="155" y="266" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="9.5" font-style="italic" fill="#8A97A2">asks for data</text>
+  <circle cx="70" cy="356" r="12" fill="#16212C"></circle>
+  <text x="70" y="360" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" font-weight="700" fill="#FBFAF8">1</text>
+  <text x="92" y="360" font-family="'IBM Plex Sans',sans-serif" font-size="14" font-weight="600" fill="#16212C">Browser</text>
+  <text x="70" y="388" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">GET</text>
+  <text x="110" y="388" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">/api/products</text>
 
-  <!-- 2. Web server -->
+  <line x1="180" y1="373" x2="248" y2="373" stroke="#4A5B6E" stroke-width="1.6" marker-end="url(#arrow)"></line>
+  <text x="214" y="363" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#6B7A87">:80</text>
+
+  <!-- 2. Nginx outer -->
   <g filter="url(#card-shadow)">
-    <rect x="320" y="150" width="230" height="150" rx="10" fill="#FBF1E7" stroke="#E9C8A0" stroke-width="1.4"></rect>
+    <rect x="250" y="110" width="260" height="530" rx="10" fill="#FFFFFF" stroke="#D8DEE3" stroke-width="1.2"></rect>
   </g>
-  <text x="435" y="185" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="15" font-weight="700" fill="#7A3E12">Web server</text>
-  <text x="435" y="204" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#9C6A3A">(Nginx)</text>
-  <line x1="340" y1="216" x2="530" y2="216" stroke="#EDDDC5" stroke-width="1"></line>
-  <text x="435" y="238" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="10.5" fill="#8A5222">routes by path:</text>
-  <text x="435" y="256" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#7A3E12">/ → static file</text>
-  <text x="435" y="272" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#7A3E12">/api/ → forward on</text>
+  <circle cx="280" cy="140" r="12" fill="#16212C"></circle>
+  <text x="280" y="144" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" font-weight="700" fill="#FBFAF8">2</text>
+  <text x="302" y="144" font-family="'IBM Plex Sans',sans-serif" font-size="14.5" font-weight="700" fill="#16212C">nginx</text>
+  <text x="470" y="144" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">:80</text>
+  <line x1="270" y1="160" x2="490" y2="160" stroke="#E4E9ED" stroke-width="1"></line>
 
-  <!-- 3. Application server -->
+  <!-- location / branch -->
+  <rect x="270" y="182" width="220" height="100" rx="6" fill="#F3F5F6" stroke="#E1E6E9" stroke-width="1"></rect>
+  <text x="286" y="206" font-family="'IBM Plex Mono',monospace" font-size="12" font-weight="600" fill="#16212C">location /</text>
+  <text x="286" y="226" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">root server/</text>
+  <text x="286" y="242" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">index index.html</text>
+  <text x="286" y="266" font-family="'IBM Plex Sans',sans-serif" font-size="9.5" font-style="italic" fill="#8A97A2">→ reads straight off disk, no app code runs</text>
+
+  <!-- static files card -->
   <g filter="url(#card-shadow)">
-    <rect x="600" y="150" width="270" height="150" rx="10" fill="#FBF1E7" stroke="#E9C8A0" stroke-width="1.4"></rect>
+    <rect x="560" y="182" width="190" height="100" rx="8" fill="#FFFFFF" stroke="#D8DEE3" stroke-width="1.2"></rect>
   </g>
-  <text x="735" y="185" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="15" font-weight="700" fill="#7A3E12">Application server</text>
-  <text x="735" y="204" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#9C6A3A">(Spring Boot · Tomcat · Hibernate)</text>
-  <line x1="620" y1="216" x2="860" y2="216" stroke="#EDDDC5" stroke-width="1"></line>
-  <text x="735" y="238" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="10.5" fill="#8A5222">runs the business logic —</text>
-  <text x="735" y="254" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="10.5" fill="#8A5222">decides what data to fetch,</text>
-  <text x="735" y="270" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="10.5" fill="#8A5222">turns rows into JSON</text>
+  <text x="576" y="206" font-family="'IBM Plex Sans',sans-serif" font-size="13" font-weight="600" fill="#16212C">server/</text>
+  <text x="576" y="226" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">index.html</text>
+  <text x="576" y="242" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">style.css</text>
+  <text x="576" y="258" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">script.js</text>
 
-  <!-- 4. Database -->
+  <line x1="490" y1="228" x2="553" y2="228" stroke="#4A5B6E" stroke-width="1.5" marker-end="url(#arrow)"></line>
+  <text x="521" y="218" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9.5" fill="#8A97A2">file read</text>
+
+  <!-- location /api/ branch (the highlighted path) -->
+  <rect x="270" y="440" width="220" height="150" rx="6" fill="#FBF1E7" stroke="#E9C8A0" stroke-width="1.2"></rect>
+  <text x="286" y="464" font-family="'IBM Plex Mono',monospace" font-size="12" font-weight="700" fill="#7A3E12">location /api/</text>
+  <text x="286" y="486" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#8A5222">proxy_pass</text>
+  <text x="286" y="502" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#8A5222">localhost:8080/</text>
+  <text x="286" y="526" font-family="'IBM Plex Sans',sans-serif" font-size="9.5" font-style="italic" fill="#9C6A3A">strips "/api/" —</text>
+  <text x="286" y="540" font-family="'IBM Plex Sans',sans-serif" font-size="9.5" font-style="italic" fill="#9C6A3A">remainder becomes</text>
+  <text x="286" y="554" font-family="'IBM Plex Mono',monospace" font-size="10" font-weight="600" fill="#7A3E12">/products</text>
+
+  <!-- routing spine from browser down into /api/ block -->
+  <path d="M 210 373 L 230 373 L 230 515 L 263 515" fill="none" stroke="#4A5B6E" stroke-width="1.4"></path>
+  <path d="M 210 373 L 230 373 L 230 228 L 263 228" fill="none" stroke="#4A5B6E" stroke-width="1.4"></path>
+  <circle cx="230" cy="373" r="3" fill="#4A5B6E"></circle>
+
+  <line x1="490" y1="515" x2="640" y2="515" stroke="#B45A1F" stroke-width="1.8" marker-end="url(#arrow-accent)"></line>
+  <text x="565" y="503" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9.5" fill="#8A5222">/products</text>
+
+  <!-- 3. Spring Boot process boundary -->
   <g filter="url(#card-shadow)">
-    <rect x="910" y="150" width="230" height="150" rx="10" fill="#FFFFFF" stroke="#D8DEE3" stroke-width="1.2"></rect>
+    <rect x="645" y="330" width="330" height="290" rx="10" fill="#FFFFFF" stroke="#D8DEE3" stroke-width="1.2" stroke-dasharray="4 3"></rect>
   </g>
-  <text x="1025" y="185" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="15" font-weight="700" fill="#16212C">Database</text>
-  <text x="1025" y="204" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#8A97A2">(Postgres)</text>
-  <line x1="930" y1="216" x2="1120" y2="216" stroke="#E4E9ED" stroke-width="1"></line>
-  <text x="1025" y="240" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#6B7A87">products (id, name, price)</text>
-  <text x="1025" y="266" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="9.5" font-style="italic" fill="#8A97A2">stores &amp; returns rows</text>
+  <circle cx="675" cy="360" r="12" fill="#16212C"></circle>
+  <text x="675" y="364" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" font-weight="700" fill="#FBFAF8">3</text>
+  <text x="697" y="364" font-family="'IBM Plex Sans',sans-serif" font-size="14" font-weight="700" fill="#16212C">Spring Boot process</text>
+  <text x="960" y="364" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">:8080</text>
+  <line x1="665" y1="380" x2="960" y2="380" stroke="#E4E9ED" stroke-width="1"></line>
 
-  <!-- forward arrows (top of cards) -->
-  <line x1="270" y1="200" x2="313" y2="200" stroke="#B45A1F" stroke-width="1.8" marker-end="url(#arrow)"></line>
-  <line x1="550" y1="200" x2="593" y2="200" stroke="#B45A1F" stroke-width="1.8" marker-end="url(#arrow)"></line>
-  <line x1="870" y1="200" x2="903" y2="200" stroke="#B45A1F" stroke-width="1.8" marker-end="url(#arrow)"></line>
+  <rect x="665" y="398" width="130" height="60" rx="6" fill="#F3F5F6" stroke="#E1E6E9" stroke-width="1"></rect>
+  <text x="730" y="424" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="11.5" font-weight="600" fill="#16212C">Tomcat</text>
+  <text x="730" y="440" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="9.5" fill="#8A97A2">embedded</text>
 
-  <!-- return arrows (bottom, the response coming back) -->
-  <line x1="903" y1="335" x2="877" y2="335" stroke="#8FA0AF" stroke-width="1.5" marker-end="url(#arrow-return)"></line>
-  <line x1="593" y1="335" x2="557" y2="335" stroke="#8FA0AF" stroke-width="1.5" marker-end="url(#arrow-return)"></line>
-  <line x1="313" y1="335" x2="277" y2="335" stroke="#8FA0AF" stroke-width="1.5" marker-end="url(#arrow-return)"></line>
-  <path d="M 1025 300 L 1025 335 L 910 335" fill="none" stroke="#8FA0AF" stroke-width="1.5"></path>
-  <path d="M 735 300 L 735 335 L 630 335" fill="none" stroke="#8FA0AF" stroke-width="1.5"></path>
-  <path d="M 435 300 L 435 335 L 350 335" fill="none" stroke="#8FA0AF" stroke-width="1.5"></path>
-  <path d="M 155 300 L 155 335 L 70 335" fill="none" stroke="#8FA0AF" stroke-width="1.5"></path>
-  <text x="605" y="357" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="11" fill="#6B7A87">response traverses back the same way — rows out, JSON to the client</text>
+  <line x1="795" y1="428" x2="820" y2="428" stroke="#4A5B6E" stroke-width="1.4" marker-end="url(#arrow)"></line>
 
-  <!-- legend -->
-  <line x1="40" y1="420" x2="66" y2="420" stroke="#B45A1F" stroke-width="1.8" marker-end="url(#arrow)"></line>
-  <text x="76" y="424" font-family="'IBM Plex Sans',sans-serif" font-size="11" fill="#7A3E12">request, forwarding</text>
-  <line x1="230" y1="420" x2="256" y2="420" stroke="#8FA0AF" stroke-width="1.5" marker-end="url(#arrow-return)"></line>
-  <text x="266" y="424" font-family="'IBM Plex Sans',sans-serif" font-size="11" fill="#6B7A87">response, returning</text>
+  <rect x="820" y="398" width="140" height="60" rx="6" fill="#F3F5F6" stroke="#E1E6E9" stroke-width="1"></rect>
+  <text x="890" y="420" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="10.5" font-weight="600" fill="#16212C">Dispatcher</text>
+  <text x="890" y="434" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="10.5" font-weight="600" fill="#16212C">Servlet</text>
+
+  <line x1="890" y1="458" x2="890" y2="480" stroke="#4A5B6E" stroke-width="1.4" marker-end="url(#arrow)"></line>
+  <text x="908" y="472" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#8A97A2">@GetMapping</text>
+
+  <rect x="770" y="486" width="180" height="66" rx="6" fill="#FBF1E7" stroke="#E9C8A0" stroke-width="1.2"></rect>
+  <text x="860" y="510" text-anchor="middle" font-family="'IBM Plex Sans',sans-serif" font-size="11.5" font-weight="700" fill="#7A3E12">ProductController</text>
+  <text x="860" y="527" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9.5" fill="#8A5222">@RestController</text>
+  <text x="860" y="542" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9.5" fill="#8A5222">GET /products</text>
+
+  <line x1="950" y1="519" x2="1010" y2="519" stroke="#B45A1F" stroke-width="1.8" marker-end="url(#arrow-accent)"></line>
+
+  <!-- 4. Repository -->
+  <g filter="url(#card-shadow)">
+    <rect x="1010" y="480" width="230" height="80" rx="8" fill="#FBF1E7" stroke="#E9C8A0" stroke-width="1.4"></rect>
+  </g>
+  <circle cx="1032" cy="500" r="11" fill="#B45A1F"></circle>
+  <text x="1032" y="504" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" font-weight="700" fill="#FBF1E7">4</text>
+  <text x="1050" y="504" font-family="'IBM Plex Sans',sans-serif" font-size="12.5" font-weight="700" fill="#7A3E12">ProductRepository</text>
+  <text x="1025" y="524" font-family="'IBM Plex Mono',monospace" font-size="9.5" fill="#8A5222">extends JpaRepository&lt;Product, Integer&gt;</text>
+  <text x="1025" y="542" font-family="'IBM Plex Sans',sans-serif" font-size="9" font-style="italic" fill="#9C6A3A">no method body — Spring generates the</text>
+  <text x="1025" y="554" font-family="'IBM Plex Sans',sans-serif" font-size="9" font-style="italic" fill="#9C6A3A">real implementation at runtime</text>
+
+  <line x1="1125" y1="480" x2="1125" y2="290" stroke="#B45A1F" stroke-width="1.8" marker-end="url(#arrow-accent)"></line>
+  <text x="1142" y="390" font-family="'IBM Plex Mono',monospace" font-size="9.5" fill="#8A5222">Hibernate</text>
+  <text x="1142" y="402" font-family="'IBM Plex Mono',monospace" font-size="9.5" fill="#8A5222">generates SQL</text>
+  <text x="1142" y="414" font-family="'IBM Plex Mono',monospace" font-size="9.5" fill="#8A5222">via JDBC</text>
+
+  <!-- 5. Postgres -->
+  <g filter="url(#card-shadow)">
+    <rect x="1010" y="150" width="230" height="120" rx="8" fill="#FFFFFF" stroke="#D8DEE3" stroke-width="1.2"></rect>
+  </g>
+  <circle cx="1032" cy="176" r="11" fill="#16212C"></circle>
+  <text x="1032" y="180" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" font-weight="700" fill="#FBFAF8">5</text>
+  <text x="1050" y="180" font-family="'IBM Plex Sans',sans-serif" font-size="13" font-weight="700" fill="#16212C">Postgres</text>
+  <text x="1211" y="180" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#6B7A87">:5432</text>
+  <line x1="1025" y1="192" x2="1225" y2="192" stroke="#E4E9ED" stroke-width="1"></line>
+  <text x="1025" y="212" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">via DBngin</text>
+  <text x="1025" y="230" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#6B7A87">products (id, name, price)</text>
+  <text x="1025" y="252" font-family="'IBM Plex Sans',sans-serif" font-size="9.5" font-style="italic" fill="#8A97A2">rows out → JSON back to the browser</text>
+
+  <!-- TablePlus, admin-only, dashed -->
+  <rect x="1010" y="40" width="230" height="56" rx="8" fill="#F3F5F6" stroke="#D8DEE3" stroke-width="1"></rect>
+  <text x="1025" y="62" font-family="'IBM Plex Sans',sans-serif" font-size="11" font-weight="600" fill="#4A5B6E">TablePlus</text>
+  <text x="1025" y="78" font-family="'IBM Plex Sans',sans-serif" font-size="9.5" fill="#8A97A2">manual inspection only</text>
+  <line x1="1125" y1="96" x2="1125" y2="147" stroke="#8A97A2" stroke-width="1.2" stroke-dasharray="2 3"></line>
+
+  <!-- Legend -->
+  <line x1="40" y1="686" x2="66" y2="686" stroke="#4A5B6E" stroke-width="1.6" marker-end="url(#arrow)"></line>
+  <text x="76" y="690" font-family="'IBM Plex Sans',sans-serif" font-size="11" fill="#4A5B6E">static / framework hop</text>
+  <line x1="240" y1="686" x2="266" y2="686" stroke="#B45A1F" stroke-width="1.8" marker-end="url(#arrow-accent)"></line>
+  <text x="276" y="690" font-family="'IBM Plex Sans',sans-serif" font-size="11" fill="#7A3E12">the traced request's path</text>
+  <rect x="480" y="678" width="14" height="14" rx="3" fill="none" stroke="#16212C" stroke-width="1.2" stroke-dasharray="3 2"></rect>
+  <text x="500" y="690" font-family="'IBM Plex Sans',sans-serif" font-size="11" fill="#4A5B6E">process boundary (one JVM)</text>
 </svg>
