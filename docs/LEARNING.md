@@ -1,16 +1,22 @@
 # Learning journal — building a local Nginx + Spring Boot + Postgres stack
 
-This is a record of an assignment from a backend development course: set up
-Nginx locally, serve a static site through it, reverse-proxy it to a dynamic
-app, then wire that app to a real database — and be able to explain every
-step, not just get it working. The instructor's condition was explicit: no
-AI writing the code — guidance and step-by-step review only, mistakes and
-all. This document is the "all" part: the wrong turns are kept in, because
-they're what actually built the mental model.
+I wanted to actually understand what happens between typing a URL and seeing
+data appear on screen — not just get it working, but trace every hop by
+hand: **Nginx** (static files + reverse proxy) → **Spring Boot** (embedded
+Tomcat, REST controllers) → **Hibernate/JPA** → **Postgres**.
 
-It's organized around the seven parts of the original assignment. Each part
-ends with a **Confusions resolved** section — the specific misconceptions
-that came up, and the correction, written the way they actually happened.
+This document is organized around the seven stages that stack came together
+in. Each one ends with a **Confusions resolved** table — the actual
+misconceptions that came up along the way, and the correction. Nothing here
+was polished after the fact; the wrong turns are kept in, because they're
+what actually built the mental model.
+
+**Skills this exercise actually exercised:** Nginx reverse-proxy
+configuration and routing semantics, the servlet request lifecycle,
+JPA/Hibernate entity-to-table mapping, REST endpoint design, relational
+schema design (Postgres), Maven dependency management, and — repeatedly —
+reading an error message, forming a hypothesis, and testing it directly
+instead of guessing.
 
 ---
 
@@ -181,3 +187,24 @@ Nginx  ──── location /      → reads server/index.html, style.css, scri
 Every arrow in that diagram was, at some point during this exercise, the
 thing that *didn't* work on the first attempt — which is a large part of why
 each one is now understood rather than just memorized.
+
+**What `GET http://localhost/api/products` actually returns**, having
+passed through every layer above:
+
+```json
+[
+  { "id": 1, "name": "Pen", "price": 1.5 },
+  { "id": 2, "name": "Notebook", "price": 5.99 }
+]
+```
+
+## Next steps
+
+The stack works, but it's a deliberately minimal slice — the honest list of
+what's still missing before this would resemble a real service:
+
+- **Schema migrations.** `ddl-auto=update` is fine for a one-table exercise; a real project needs Flyway or Liquibase for versioned, reviewable schema changes.
+- **Write endpoints.** Only `GET` exists right now — `POST`/`PUT`/`DELETE` on `/api/products`, with request validation, is the natural next piece.
+- **Error handling.** No `@ExceptionHandler`/`@ControllerAdvice` yet — right now a bad request just falls through to Spring's default error page instead of a clean JSON error response.
+- **Config secrets.** `application.properties` has a blank local dev password committed for convenience; a real deployment would pull credentials from environment variables or a secrets manager, never from a file in source control.
+- **Tests.** Nothing here is covered by an automated test yet — `@SpringBootTest` / `@DataJpaTest` would be the next thing to add before extending this further.

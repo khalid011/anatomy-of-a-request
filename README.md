@@ -5,24 +5,11 @@ by hand, one hop at a time, through a real local stack: **Nginx** (static
 files + reverse proxy) → **Spring Boot** (embedded Tomcat, REST controllers)
 → **Hibernate/JPA** → **Postgres**.
 
-No tutorial was copy-pasted end-to-end here. Every piece — the HTML/CSS/JS,
-the Nginx config, the Spring Boot controllers, the JPA entity, the database
-table — was written and debugged by hand, one error at a time. The full
-narrative of what broke, why, and what it revealed about how the stack fits
-together is in [`docs/LEARNING.md`](docs/LEARNING.md).
-
-## Tech stack
-
-| Layer | Tech |
-|---|---|
-| Reverse proxy / static files | ![Nginx](https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white) |
-| Language | ![Java](https://img.shields.io/badge/Java_21-ED8B00?logo=openjdk&logoColor=white) |
-| Application framework | ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?logo=springboot&logoColor=white) |
-| Embedded app server | ![Tomcat](https://img.shields.io/badge/Tomcat-F8DC75?logo=apachetomcat&logoColor=black) |
-| ORM | ![Hibernate](https://img.shields.io/badge/Hibernate-59666C?logo=hibernate&logoColor=white) |
-| Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) |
-| Build tool | ![Maven](https://img.shields.io/badge/Maven-C71A36?logo=apachemaven&logoColor=white) |
-| DB tooling | [DBngin](https://dbngin.com/) (instance manager) · [TablePlus](https://tableplus.com/) (GUI client) |
+I didn't just follow a tutorial start to finish. Every piece — the
+HTML/CSS/JS, the Nginx config, the Spring Boot controllers, the JPA entity,
+the database table — was written and debugged by hand, one error at a time.
+The full narrative of what broke, why, and what it revealed about how the
+stack fits together is in [`docs/LEARNING.md`](docs/LEARNING.md).
 
 ## The request's path
 
@@ -37,6 +24,19 @@ Two independent routes live inside one Nginx server block:
 interface with no method bodies, whose real implementation Spring generates
 at runtime — which Hibernate translates into SQL against Postgres, and back
 into JSON on the way out.
+
+## Tech stack
+
+| Layer | Tech |
+|---|---|
+| Reverse proxy / static files | ![Nginx](https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white) |
+| Language | ![Java](https://img.shields.io/badge/Java_21-ED8B00?logo=openjdk&logoColor=white) |
+| Application framework | ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?logo=springboot&logoColor=white) |
+| Embedded app server | ![Tomcat](https://img.shields.io/badge/Tomcat-F8DC75?logo=apachetomcat&logoColor=black) |
+| ORM | ![Hibernate](https://img.shields.io/badge/Hibernate-59666C?logo=hibernate&logoColor=white) |
+| Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) |
+| Build tool | ![Maven](https://img.shields.io/badge/Maven-C71A36?logo=apachemaven&logoColor=white) |
+| DB tooling | [DBngin](https://dbngin.com/) (instance manager) · [TablePlus](https://tableplus.com/) (GUI client) |
 
 ## What's in here
 
