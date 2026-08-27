@@ -45,17 +45,25 @@ Wrote `index.html`, `style.css`, `script.js` by hand and pointed Nginx's
 
 | ❌ Misconception | ✅ Reality |
 |---|---|
-| Files saved from a plain text editor are named `index.html` | Windows hides known extensions by default — they were actually `index.html.txt`. Fixed via File Explorer → View → show file name extensions. |
+| Windows File Explorer shows a file's real name by default | It hides known extensions — a file "named" `index.html` was actually `index.html.txt`. Silent source of "why won't this render" bugs worth knowing about. |
+| "I fixed the file" but the browser shows no change | The save often hadn't actually landed on disk — always verify the file changed before assuming a fix took effect. |
+
+<details>
+<summary>Smaller HTML/CSS/JS syntax slips (click to expand)</summary>
+
+| ❌ Misconception | ✅ Reality |
+|---|---|
 | `<head/>` is a valid way to close a tag | HTML doesn't self-close container tags that way — needs `</head>`. |
 | Visible page text belongs inside `<head>` | `<head>` is for metadata only (title, `<link>`); visible content goes in `<body>`. |
 | `ref="..."` links a `<script>`/`<link>` to a file | Not a real attribute — it's `src` for `<script>`, `href` for `<link>`. |
 | `<script src="..." />` is valid (self-closing) | `<script>` always needs an explicit closing tag, since it can hold inline code between the tags. |
-| The last CSS declaration in a block doesn't need a `;` | Every declaration needs one, including the last — easy to miss since the block still "looks" closed without it. |
+| The last CSS declaration in a block doesn't need a `;` | Every declaration needs one, including the last. |
 | `16sp` is a valid CSS font-size unit | That's Android's unit. CSS uses `px`, `em`, `rem`. |
 | `func updateP() { }` declares a JS function | `func` is Swift/Go. JS uses `function`. |
 | `p: { onchange = Text("...") }` updates an element's text | Not real JS. Actual pattern: `document.querySelector("p").textContent = "..."`. |
 | `.onClick = fn` wires up a click handler | Case-sensitive — it's `.onclick`, all lowercase. |
-| "I fixed the file" but the browser shows no change | The save often hadn't actually landed on disk — always verify the file changed before assuming a fix took effect. |
+
+</details>
 
 ## Part 3 — A Spring Boot "Hello World"
 

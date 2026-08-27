@@ -1,15 +1,15 @@
 # anatomy-of-a-request
 
-What actually happens between typing a URL and seeing data on screen — traced
-by hand, one hop at a time, through a real local stack: **Nginx** (static
-files + reverse proxy) → **Spring Boot** (embedded Tomcat, REST controllers)
-→ **Hibernate/JPA** → **Postgres**.
+I built and debugged every layer of this myself — no tutorial copy-pasted
+start to finish. It traces what actually happens between typing a URL and
+seeing data on screen, one hop at a time, through a real local stack:
+**Nginx** (static files + reverse proxy) → **Spring Boot** (embedded Tomcat,
+REST controllers) → **Hibernate/JPA** → **Postgres**.
 
-I didn't just follow a tutorial start to finish. Every piece — the
-HTML/CSS/JS, the Nginx config, the Spring Boot controllers, the JPA entity,
-the database table — was written and debugged by hand, one error at a time.
-The full narrative of what broke, why, and what it revealed about how the
-stack fits together is in [`docs/LEARNING.md`](docs/LEARNING.md).
+The HTML/CSS/JS, the Nginx config, the Spring Boot controllers, the JPA
+entity, the database table — all written and debugged by hand, one error at
+a time. The full narrative of what broke, why, and what it revealed about
+how the stack fits together is in [`docs/LEARNING.md`](docs/LEARNING.md).
 
 ## The request's path
 
