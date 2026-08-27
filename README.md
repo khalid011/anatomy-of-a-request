@@ -11,6 +11,19 @@ table — was written and debugged by hand, one error at a time. The full
 narrative of what broke, why, and what it revealed about how the stack fits
 together is in [`docs/LEARNING.md`](docs/LEARNING.md).
 
+## Tech stack
+
+| Layer | Tech |
+|---|---|
+| Reverse proxy / static files | ![Nginx](https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white) |
+| Language | ![Java](https://img.shields.io/badge/Java_21-ED8B00?logo=openjdk&logoColor=white) |
+| Application framework | ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?logo=springboot&logoColor=white) |
+| Embedded app server | ![Tomcat](https://img.shields.io/badge/Tomcat-F8DC75?logo=apachetomcat&logoColor=black) |
+| ORM | ![Hibernate](https://img.shields.io/badge/Hibernate-59666C?logo=hibernate&logoColor=white) |
+| Database | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) |
+| Build tool | ![Maven](https://img.shields.io/badge/Maven-C71A36?logo=apachemaven&logoColor=white) |
+| DB tooling | [DBngin](https://dbngin.com/) (instance manager) · [TablePlus](https://tableplus.com/) (GUI client) |
+
 ## The request's path
 
 <img src="docs/request-path-map.svg" alt="Diagram: browser request through Nginx's two routes, into Spring Boot's embedded Tomcat, through DispatcherServlet to a controller, then a repository into Postgres" width="100%">

@@ -24,23 +24,11 @@ assuming a command like `.\nginx.exe` will find the binary), and ran
 
 **Confusions resolved**
 
-- **PowerShell won't run an executable from the current directory by name
-  alone.** `nginx.exe -s reload` failed with "not recognized" — not because
-  Nginx was missing, but because PowerShell (unlike `cmd.exe`) doesn't search
-  the current directory automatically. Fix: `.\nginx.exe -s reload`.
-- **Two `nginx.exe` processes in Task Manager is correct, not a bug.** Nginx
-  runs a **master process** (reads config, manages workers, handles signals
-  like `-s reload`) and at least one **worker process** (actually accepts
-  connections and serves requests). Seeing exactly one of each is the healthy
-  state.
-- **Why bother with Nginx at all, when Spring Boot has an embedded Tomcat
-  that's already a complete HTTP server?** Because Tomcat *can* serve static
-  files, but every request — even a static image — still passes through the
-  full servlet lifecycle machinery, which is wasted overhead for something
-  as simple as "read a file, write bytes." Nginx does that specific job with
-  far less overhead, and in production also serves as the single public
-  entry point, TLS terminator, and load balancer in front of one or more app
-  server instances.
+| ❌ Misconception | ✅ Reality |
+|---|---|
+| `nginx.exe -s reload` fails, so Nginx must be broken or missing | PowerShell (unlike `cmd.exe`) won't run an executable from the current directory by name alone. Fix: `.\nginx.exe -s reload`. |
+| Two `nginx.exe` processes in Task Manager means something's wrong | Correct, expected state: one **master process** (reads config, handles `-s reload`) + one **worker process** (actually serves requests). |
+| Nginx is redundant since Spring Boot's embedded Tomcat is already a full HTTP server | Tomcat *can* serve static files, but every request — even an image — passes through the full servlet lifecycle, wasted overhead for "read file, send bytes." Nginx does that one job cheaper, and in production also acts as the single public entry point, TLS terminator, and load balancer in front of app servers. |
 
 ## Part 2 — Serve a static site through Nginx
 
@@ -49,35 +37,19 @@ Wrote `index.html`, `style.css`, `script.js` by hand and pointed Nginx's
 
 **Confusions resolved**
 
-- **Windows hides file extensions by default.** Files saved from a plain
-  text editor ended up as `index.html.txt` without any visual indicator.
-  Fixed via File Explorer → View → show file name extensions.
-- **HTML syntax slips that looked plausible but aren't valid**: `<head/>` as
-  a self-closing tag (not how HTML closes an element — needs `</head>`);
-  visible content placed inside `<head>` instead of `<body>` (`<head>` is for
-  metadata, not what the reader sees); `<script ref="...">` and
-  `<link ref="...">` (the real attribute is `src` for `<script>`, `href` for
-  `<link>` — `ref` isn't a real HTML attribute at all); `<script ...>`
-  written as self-closing (`<script src="..." />`) — script tags always need
-  an explicit closing tag since they can contain inline code between them.
-- **CSS needs a semicolon after every declaration, including the last one in
-  a block.** It's easy to miss on the final line since the block still
-  "looks" closed without it — but it's still invalid and worth fixing on
-  sight, not just when it happens to break something.
-- **`16sp` isn't a CSS unit** — that's Android's "scalable pixels." The CSS
-  equivalents are `px`, `em`, `rem`.
-- **JavaScript function syntax borrowed from other languages doesn't
-  transfer.** `func updateP() { ... }` (Swift/Go-style) isn't valid — the
-  keyword is `function`. Similarly, `p: { onchange = Text("...") }` isn't
-  real JS at all — the actual pattern is: select the element
-  (`document.querySelector("p")`), then assign directly to a property
-  (`.textContent = "..."`), no wrapper function needed to set a string.
-  Event handler properties are also case-sensitive and lowercase:
-  `onclick`, not `onClick`.
-- **Editing a file and refreshing the browser only works if the save
-  actually happened.** Several rounds of "I fixed it" showed no change on
-  re-check because the file on disk was untouched — a reminder to verify a
-  save landed rather than assuming it did.
+| ❌ Misconception | ✅ Reality |
+|---|---|
+| Files saved from a plain text editor are named `index.html` | Windows hides known extensions by default — they were actually `index.html.txt`. Fixed via File Explorer → View → show file name extensions. |
+| `<head/>` is a valid way to close a tag | HTML doesn't self-close container tags that way — needs `</head>`. |
+| Visible page text belongs inside `<head>` | `<head>` is for metadata only (title, `<link>`); visible content goes in `<body>`. |
+| `ref="..."` links a `<script>`/`<link>` to a file | Not a real attribute — it's `src` for `<script>`, `href` for `<link>`. |
+| `<script src="..." />` is valid (self-closing) | `<script>` always needs an explicit closing tag, since it can hold inline code between the tags. |
+| The last CSS declaration in a block doesn't need a `;` | Every declaration needs one, including the last — easy to miss since the block still "looks" closed without it. |
+| `16sp` is a valid CSS font-size unit | That's Android's unit. CSS uses `px`, `em`, `rem`. |
+| `func updateP() { }` declares a JS function | `func` is Swift/Go. JS uses `function`. |
+| `p: { onchange = Text("...") }` updates an element's text | Not real JS. Actual pattern: `document.querySelector("p").textContent = "..."`. |
+| `.onClick = fn` wires up a click handler | Case-sensitive — it's `.onclick`, all lowercase. |
+| "I fixed the file" but the browser shows no change | The save often hadn't actually landed on disk — always verify the file changed before assuming a fix took effect. |
 
 ## Part 3 — A Spring Boot "Hello World"
 
@@ -87,28 +59,13 @@ string, ran it, and hit `http://localhost:8080/hello` directly.
 
 **Confusions resolved**
 
-- **`@RestController` isn't "conforming to a REST protocol."** REST isn't a
-  protocol at all — it's an architectural style built on top of HTTP, which
-  *is* the actual protocol. What `@RestController` really does is combine
-  `@Controller` (marks the class as a request handler) with `@ResponseBody`
-  (whatever a method returns gets written directly into the HTTP response
-  body, instead of being treated as the name of an HTML view template to
-  render). Plain `@Controller` is for server-rendered pages via a template
-  engine — a legitimate but different architecture, not a "worse" version of
-  `@RestController`.
-- **Initializr's Java version dropdown won't always list your exact
-  installed version.** With JDK 23 installed, the practical rule is: pick
-  the highest listed option that's *less than or equal to* your installed
-  version (21, in this case) — a newer JDK can run code targeting an older
-  version, not the reverse.
-- **`mvn spring-boot:run` failing with "not recognized"** usually means
-  Maven isn't installed globally — but Spring Initializr projects ship with
-  a **Maven Wrapper** (`mvnw` / `mvnw.cmd`) specifically so a global Maven
-  install isn't required. `.\mvnw.cmd spring-boot:run` works without one.
-- **Testing in the wrong browser produced a false "it's broken" signal** —
-  an embedded/sandboxed browser rendered nothing, while a real browser (Edge)
-  showed the response correctly. Worth ruling out the test environment
-  itself before assuming the app is broken.
+| ❌ Misconception | ✅ Reality |
+|---|---|
+| `@RestController` means "conforming to a REST protocol" | REST isn't a protocol — it's an architectural style built on HTTP, the actual protocol. `@RestController` = `@Controller` (handles requests) + `@ResponseBody` (return value goes straight into the HTTP response body, instead of being resolved as an HTML view template name). |
+| `@Controller` is just a worse version of `@RestController` | Different purpose: `@Controller` is for server-rendered pages via a template engine — a legitimate, different architecture. |
+| Initializr's Java dropdown should show your exact installed version (23) | It may only list a few options. Rule: pick the highest listed version ≤ your installed one (21 here) — a newer JDK runs older-targeted code fine. |
+| `mvn spring-boot:run` failing means Maven/the project is broken | Usually just means Maven isn't installed globally. Spring Initializr projects ship a **Maven Wrapper** — `.\mvnw.cmd spring-boot:run` needs no global install. |
+| The endpoint doesn't work — no text shows in the browser | Was actually a broken/sandboxed test browser, not the app. A real browser (Edge) showed it working immediately. Rule out the test environment before assuming the app is broken. |
 
 ## Part 4 — Reverse proxy Nginx → Spring Boot
 
@@ -116,85 +73,38 @@ Added a second `location` block to the same Nginx `server {}`, using
 `proxy_pass` to forward matching requests to the Spring Boot app on port
 8080.
 
-**Confusions resolved** — this was the deepest rabbit hole, and worth
-recording in full because the mechanism isn't obvious from the directive
-names alone.
+**Confusions resolved** — this was the deepest rabbit hole. The trailing-slash
+mechanism especially isn't obvious from the directive names alone, so it's
+worth a dedicated table rather than prose.
 
-- **`location /` already had a job (serving static files via `root`), so a
-  second, distinct path prefix (`/api/`) is needed** for the proxy — not
-  because `proxy_pass` can't target port 8080 from `location /` (it can,
-  from any location block), but because one `location` block can't
-  simultaneously serve files *and* proxy for the same path without
-  conflicting.
-- **The trailing slash on both `location` and `proxy_pass` isn't
-  decorative — it changes Nginx's behavior entirely.** The actual mechanism,
-  worked out by testing every combination directly rather than taking the
-  rule on faith:
-  - `location /api/ { proxy_pass http://localhost:8080/; }` — Nginx matches
-    the `/api/` prefix, **strips it**, and appends whatever's left onto the
-    path portion of `proxy_pass` (here, `/`). So `/api/hello` → strip
-    `/api/` → remainder `hello` → append onto `/` → forwarded as `/hello`,
-    which matches the controller's `@GetMapping("/hello")`.
-  - Drop the trailing slash from `proxy_pass` only
-    (`http://localhost:8080;` — no path component at all): Nginx has
-    nothing to append the stripped remainder *onto*, so it stops
-    rewriting entirely and forwards the **original, full path unchanged** —
-    `/api/hello` arrives at Spring Boot as literally `/api/hello`, which
-    doesn't match any mapping → 404 (Spring Boot's own Whitelabel Error
-    Page, not an Nginx error — proof the proxy hop itself worked, just to
-    the wrong path).
-  - Drop the trailing slash from `location` only (`location /api {`) with a
-    slashed `proxy_pass`: for a request to exactly `/api`, the match is
-    exact and the remainder is empty, so it still works, forwarding `/`
-    correctly. But for `/api/hello`, the matched prefix is only `/api` and
-    the remainder becomes `/hello` — **including its own leading slash** —
-    which then gets appended onto `proxy_pass`'s `/`, producing `//hello`
-    (a double slash). It's a subtle, inconsistent bug that only shows up on
-    sub-paths, not the one you're likely to test first.
-  - **The fix is keeping the trailing slash consistent on both sides** —
-    the only combination that behaves predictably for every possible
-    sub-path, not just one you happened to test.
-- **The `/` in `proxy_pass http://localhost:8080/;` is doing real work, not
-  padding.** It's the explicit path Nginx substitutes the stripped prefix
-  onto. Without any path at all in the URL (not even a bare `/`), there's no
-  anchor for the substitution, which is exactly why omitting it disables
-  prefix-stripping altogether rather than just "defaulting to root."
-- **Nginx config changes are inert until reloaded.** A running worker holds
-  its configuration already parsed in memory — editing `nginx.conf` on disk
-  changes nothing about the live process until `nginx -s reload` explicitly
-  tells the master process to re-read the file and start new workers with
-  it. `reload` (vs. `stop`) is specifically a **graceful** operation: old
-  workers finish in-flight requests before exiting, new workers (with the
-  updated config) start accepting new ones immediately — zero dropped
-  connections, the same principle behind zero-downtime rolling deploys
-  elsewhere in backend infrastructure.
-- **Tomcat's role didn't change by adding Nginx in front of it.** Tomcat is
-  inherently both a web server (speaks HTTP) and an application server (runs
-  servlet/Java code) — that's true with or without Nginx. What changed is
-  traffic *routing*: static-asset requests now never reach Tomcat at all,
-  while dynamic requests still do, exactly as they always could. It's fair
-  to describe Nginx as "the web server" and Tomcat as "the application
-  server" *for this specific architecture's division of labor* — but that's
-  a statement about how the two are being used here, not a fact about what
-  either is inherently limited to.
-- **The loopback address, and why it survives even with no network
-  connection.** `localhost` resolves to `127.0.0.1`, a special address
-  meaning "this same machine" — traffic to it is handled entirely inside the
-  OS's own networking stack and never touches a physical network adapter, so
-  it keeps working with WiFi off or no cable plugged in. Source and
-  destination being the same machine is the literal meaning of "loopback":
-  the data never leaves to loop back from anywhere external.
-- **Client and server are roles, not fixed identities.** The same Spring
-  Boot process is a *server* to the browser (accepting requests on 8080/via
-  Nginx) and, once Part 6 adds a database call, simultaneously a *client* to
-  Postgres (initiating a connection outward to port 5432). Long backend
-  chains are just this same relationship repeated at each hop.
-- **A client doesn't need a fixed, known port the way a server does.** A
-  server (Postgres, Nginx, Tomcat) *listens* on a specific, well-known port
-  by design, so others can find it. A client (TablePlus, or Spring Boot
-  acting as a DB client) only gets a disposable, OS-assigned port for the
-  duration of one connection — nobody needs to know or remember it, since
-  the client is the one initiating contact, not waiting to be found.
+**Why a second `location` block at all?** Not because `proxy_pass` can't
+target port 8080 from `location /` (it can, from any block) — but because
+`location /` already has a job (`root`, serving static files), and one block
+can't serve files *and* proxy for the same path without conflicting.
+
+**The trailing-slash mechanism** — worked out by testing every combination
+directly against `GET /api/hello` (controller mapped to `@GetMapping("/hello")`):
+
+| `location` | `proxy_pass` | What Spring Boot receives | Result |
+|---|---|---|---|
+| `/api/` | `http://localhost:8080/` | `/hello` (prefix stripped, remainder appended onto proxy_pass's `/`) | ✅ 200 — correct, and works for *any* sub-path |
+| `/api/` | `http://localhost:8080` *(no path at all)* | `/api/hello` *(nothing stripped — no anchor to append onto, so the full original path is forwarded unchanged)* | ❌ 404 (proxy hop worked, wrong path reached Spring Boot) |
+| `/api` *(no slash)* | `http://localhost:8080/` | `//hello` *(remainder keeps its own leading slash: `/hello`, appended onto proxy_pass's `/`)* | ❌ Double slash — works by accident for the bare `/api` request, breaks silently on any sub-path |
+
+**Takeaway:** keep the trailing slash consistent on **both** `location` and
+`proxy_pass` — it's the only combination that behaves predictably for every
+sub-path, not just the one you happened to test first. The `/` in
+`proxy_pass http://localhost:8080/;` is doing real work (it's the anchor the
+stripped prefix gets appended onto) — it's not decorative.
+
+| ❌ Misconception | ✅ Reality |
+|---|---|
+| Editing `nginx.conf` takes effect immediately | A running worker holds its config already parsed in memory. Nothing changes until `nginx -s reload` tells the master to re-read the file and start new workers with it. |
+| `reload` and `stop` are basically the same | `reload` is **graceful**: old workers finish in-flight requests before exiting, new workers (new config) start accepting immediately — zero dropped connections. Same principle as zero-downtime rolling deploys. |
+| Adding Nginx changed what Tomcat *is* | Tomcat was always both a web server and an application server. What changed is *routing* — static requests now never reach it. "Nginx = web server, Tomcat = app server" describes this architecture's division of labor, not a hard limit on either. |
+| `localhost` needs a working network connection | `127.0.0.1` (loopback) is handled entirely inside the OS's own stack — never touches a physical adapter, so it works with WiFi off. Source and destination being the same machine is literally what "loopback" means. |
+| Client/server are fixed identities | They're roles. The same Spring Boot process is a *server* to the browser and, once it calls Postgres, simultaneously a *client* to the database. Long backend chains are this same relationship repeated at each hop. |
+| A client needs a known, fixed port like a server does | Only servers (Postgres, Nginx, Tomcat) *listen* on a well-known port so others can find them. A client (TablePlus, or Spring Boot as a DB client) gets a disposable, OS-assigned port per connection — nobody needs to know it, since the client initiates contact. |
 
 ## Part 5 — Local database via DBngin + TablePlus
 
@@ -205,34 +115,13 @@ by hand.
 
 **Confusions resolved**
 
-- **DBngin doesn't bundle database engines — it downloads them on first
-  use.** Tapping "start" on a fresh instance kicks off a download of the
-  actual Postgres binaries before anything can run; this is expected, not a
-  stall or an error.
-- **A running database has no UI of its own to look at.** Postgres speaks
-  its own wire protocol over its port and renders nothing visually — same
-  pattern as Nginx having no window either. TablePlus is the **client** that
-  connects to that port, speaks the protocol, and renders the response as a
-  visual grid. "The database instance is running but I see nothing" is the
-  expected state without a client attached.
-- **DBngin (the manager) and Postgres/MySQL (actual databases) are different
-  layers.** DBngin doesn't store or query data itself — it's a GUI for
-  downloading, starting, and stopping the real engines. Postgres and MySQL
-  are peer, competing implementations of the same category of software
-  (relational database management systems); DBngin can launch either.
-- **TablePlus's GUI table-builder can silently leave changes unsaved.**
-  Added `name` and `price` columns showed in a different color (unsaved/
-  pending) than the `id` column (already persisted) — and a
-  subsequent `INSERT` failed with `column "name" ... does not exist`,
-  because the GUI had staged the columns but never actually committed them
-  to Postgres. Resolved by dropping the incomplete table and recreating it
-  in one atomic `CREATE TABLE` statement via SQL instead of the GUI wizard —
-  which also sidesteps the ambiguity entirely, since the GUI wizard is just
-  a friendlier front-end generating the same SQL underneath.
-- **A schema isn't something you separately "find" or create** — Postgres
-  creates the default `public` schema automatically with every new database;
-  TablePlus's sidebar sometimes collapses/hides that layer visually when
-  there's only the one default schema, showing "Tables" directly instead.
+| ❌ Misconception | ✅ Reality |
+|---|---|
+| DBngin stalled or failed when "start" triggered a download | Expected — DBngin doesn't bundle database engines, it downloads the real Postgres binaries on first use of a given instance. |
+| The DB is running but nothing visible appears — must be broken | Postgres has no UI of its own; it just speaks a wire protocol over its port (same as Nginx having no window). TablePlus is the **client** that connects and renders a visual grid. |
+| DBngin *is* the database | DBngin is a manager/GUI for downloading and starting real engines. Postgres and MySQL are the actual databases — peer implementations DBngin can launch either of. |
+| `INSERT` fails with `column "name" ... does not exist`, right after adding it via the GUI | The GUI table-builder had **staged** the columns (shown in a different color) but never committed them to Postgres. Fixed by dropping the table and recreating it in one atomic `CREATE TABLE` via SQL instead. |
+| No `public` schema visible in TablePlus's sidebar means something's missing | Postgres creates `public` automatically with every database — TablePlus just collapses that layer visually when there's only the one default schema, showing "Tables" directly. |
 
 ## Part 6 — Connect Spring Boot to the database
 
@@ -244,55 +133,16 @@ calls `.findAll()`.
 
 **Confusions resolved**
 
-- **A Maven dependency's `groupId` and `artifactId` are two separate
-  fields, not one combined string.** First attempt wrote the whole
-  `org.postgresql:postgresql` coordinate into a single `<artifactId>` tag.
-  `groupId` identifies the publisher/organization (reverse-domain style,
-  same reasoning as Java package naming — avoids collisions between
-  different publishers using similar names); `artifactId` is the specific
-  library that publisher released. Together they're a unique coordinate for
-  one library, the same way a full file path needs both a folder and a
-  filename to be unambiguous.
-- **`spring.jpa.hibernate.ddl-auto=update` only runs once, at application
-  startup** — comparing `@Entity` classes against the actual database schema
-  and adding whatever's missing. It is **not** a live watcher reacting to
-  code changes as they're saved, and it is **additive-only**: it will not
-  rename or drop a column to match a changed entity. Renaming a field in
-  `@Entity` after the table already exists doesn't rename the real column —
-  it creates a brand-new one alongside the orphaned old one. Real schema
-  changes (renames, restructuring) belong to dedicated migration tools like
-  Flyway or Liquibase in real projects, not `ddl-auto`.
-- **An `@Entity` field's name must match its column's name exactly** unless
-  overridden with `@Column(name = "...")` — a field named `text` mapped
-  against a table column named `name` doesn't error immediately; it silently
-  tries to manage two different things.
-- **`@GeneratedValue` needs an explicit strategy to match how the column was
-  actually created.** Postgres's `SERIAL` is a database-level
-  auto-increment; without `strategy = GenerationType.IDENTITY`, Hibernate's
-  default generation approach may not line up with it.
-- **JPA/Hibernate entity fields being private isn't enforced by Hibernate
-  itself** (it uses reflection regardless of access modifier) — it's a
-  standard Java encapsulation convention (private fields, public
-  getters/setters) worth following anyway, not a technical requirement.
-- **A repository interface with zero method bodies still works because
-  Spring Data JPA generates a real implementing class for it at runtime**,
-  as a dynamic proxy wired to Hibernate underneath — using nothing but the
-  interface's declared generic types (`JpaRepository<Product, Integer>`) to
-  know what entity and ID type it's managing. `JpaRepository` itself is also
-  just an interface with no bodies — the actual code that runs is written by
-  neither the developer nor Spring's own interface author, but generated
-  specifically for this interface at startup.
-- **Hibernate is the implementation of the JPA specification, not JPA
-  itself.** `@Entity`, `@Id`, and friends are inert annotations (same "just
-  metadata until something reads it via reflection" principle as
-  `@SpringBootApplication`) until Hibernate, at runtime, reads them,
-  generates the actual SQL, executes it through the JDBC driver, and maps
-  the rows back into Java objects.
-- **Missing public getters on an entity would have meant an empty `{}` in
-  the JSON response** — Jackson (Spring's default JSON library) relies on
-  public getter methods to know what to serialize; fields alone, without
-  accessors, aren't enough for the object to actually appear in the API
-  response.
+| ❌ Misconception | ✅ Reality |
+|---|---|
+| `<artifactId>org.postgresql:postgresql</artifactId>` is valid | `groupId` and `artifactId` are separate fields — `groupId` = publisher (reverse-domain, avoids naming collisions), `artifactId` = the specific library. Together they're a unique coordinate, like a folder path + filename. |
+| `ddl-auto=update` keeps the DB schema in sync live, as code changes | Runs **once, at startup** only, comparing entities to the schema. It's also **additive-only** — renaming an `@Entity` field creates a new orphaned column, it never renames the old one. Real renames need Flyway/Liquibase. |
+| A field named `text` can map to a column named `name` | Field names must match column names exactly, unless overridden with `@Column(name = "...")` — a mismatch doesn't error immediately, it just silently manages two different things. |
+| `@GeneratedValue` alone is enough for an auto-increment `SERIAL` column | Needs an explicit `strategy = GenerationType.IDENTITY` to match how `SERIAL` actually generates values — otherwise Hibernate's default strategy may not line up. |
+| Entity fields must be `private` or Hibernate won't work | Hibernate uses reflection regardless of access modifier — `private` is a Java encapsulation convention worth following, not a technical requirement. |
+| A `JpaRepository` interface with zero method bodies can't actually do anything | Spring Data JPA generates a real implementing class for it at runtime (a dynamic proxy over Hibernate), using only the declared generic types (`JpaRepository<Product, Integer>`) — nobody, not even Spring's own authors, wrote that specific implementation by hand. |
+| JPA and Hibernate are the same thing | JPA is a specification (`@Entity`, `@Id`, etc. — inert until read via reflection, same as `@SpringBootApplication`). Hibernate is the implementation that actually reads them, generates SQL, runs it via JDBC, and maps rows back to objects. |
+| An entity without public getters would still serialize fine to JSON | Jackson relies on public getters to know what to serialize — fields alone aren't enough; without getters the API would return an empty `{}`. |
 
 ## Part 7 — Full pipeline through Nginx
 
@@ -302,10 +152,9 @@ complete chain, browser to Postgres and back, through every layer above.
 
 **Confusions resolved**
 
-- **`http://localhost/api/` (no further path) correctly 404s** — not a bug.
-  Nginx strips `/api/`, leaving an empty remainder, forwarded as `/` to
-  Spring Boot; since no controller has a `@GetMapping("/")`, a 404 is the
-  expected, correct outcome, not a sign anything is broken.
+| ❌ Misconception | ✅ Reality |
+|---|---|
+| `http://localhost/api/` (no further path) 404-ing means something's broken | Correct behavior — Nginx strips `/api/`, forwards `/` to Spring Boot, and no controller has a `@GetMapping("/")`. 404 is the expected outcome here, not a sign anything failed. |
 
 ---
 
