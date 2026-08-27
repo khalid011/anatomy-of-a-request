@@ -1,0 +1,21 @@
+# Large local tooling — installers and vendored binaries don't belong in git
+tools/
+backend-app.zip
+
+# Java / Maven build output
+target/
+*.class
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS noise
+.DS_Store
+Thumbs.db

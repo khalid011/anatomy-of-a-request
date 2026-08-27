@@ -1,0 +1,29 @@
+# Nginx server block used in this project.
+#
+# This is an excerpt of the real nginx.conf's `http { server { ... } }` section —
+# not the full installation config. Paste it into your own nginx.conf's `server {}`
+# block, and replace <ABSOLUTE_PATH_TO_REPO>/server with the real path to this
+# repo's `server/` folder on your machine.
+
+server {
+    listen       80;
+    server_name  localhost;
+
+    # Static site — index.html / style.css / script.js served directly from disk.
+    location / {
+        root   <ABSOLUTE_PATH_TO_REPO>/server;
+        index  index.html index.htm;
+    }
+
+    # Reverse proxy to the Spring Boot app (embedded Tomcat on :8080).
+    #
+    # Both `location` and `proxy_pass` end in a trailing slash on purpose:
+    # Nginx strips the matched "/api/" prefix and appends whatever's left onto
+    # proxy_pass's path ("/"). So a request to /api/hello reaches Spring Boot
+    # as just /hello. Drop either trailing slash and the prefix stops being
+    # stripped — Spring Boot receives the full /api/... path instead, which
+    # won't match any @GetMapping and returns a 404.
+    location /api/ {
+        proxy_pass http://localhost:8080/;
+    }
+}
