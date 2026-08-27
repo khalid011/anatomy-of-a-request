@@ -11,12 +11,15 @@ misconceptions that came up along the way, and the correction. Nothing here
 was polished after the fact; the wrong turns are kept in, because they're
 what actually built the mental model.
 
-**Skills this exercise actually exercised:** Nginx reverse-proxy
-configuration and routing semantics, the servlet request lifecycle,
-JPA/Hibernate entity-to-table mapping, REST endpoint design, relational
-schema design (Postgres), Maven dependency management, and — repeatedly —
-reading an error message, forming a hypothesis, and testing it directly
-instead of guessing.
+**Skills this exercise actually exercised:**
+
+- Nginx reverse-proxy configuration and routing semantics
+- The servlet request lifecycle
+- JPA/Hibernate entity-to-table mapping
+- REST endpoint design
+- Relational schema design (Postgres)
+- Maven dependency management
+- Reading an error message, forming a hypothesis, and testing it directly instead of guessing — repeatedly
 
 ---
 
